@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            color: #ddd;
+            font-size: 1.2em;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .main-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .road-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .road-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .road-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .road-card.active {
+            border: 3px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .road-card h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .road-stats {
+            font-size: 0.9em;
+            color: #ddd;
+        }
+
+        .road-stats span {
+            display: block;
+            margin: 5px 0;
+        }
+
+        .intersection {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+            background: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .road {
+            position: absolute;
+            background: #555;
+        }
+
+        .road.horizontal {
+            width: 100%;
+            height: 20px;
+            top: 140px;
+        }
+
+        .road.vertical {
+            width: 20px;
+            height: 100%;
+            left: 140px;
+        }
+
+        .signal {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            transition: background 0.5s;
+        }
+
+        .signal.north { top: 50px; left: 130px; }
+        .signal.east { top: 130px; right: 50px; }
+        .signal.south { bottom: 50px; left: 130px; }
+        .signal.west { top: 130px; left: 50px; }
+
+        .signal.green { background: #4CAF50; }
+        .signal.red { background: #f44336; }
+        .signal.yellow { background: #ff9800; }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4CAF50;
+        }
+
+        .control-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            flex: 1;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.secondary {
+            background: #3498db;
+        }
+
+        button.secondary:hover {
+            background: #2980b9;
+        }
+
+        button.reset {
+            background: #e74c3c;
+        }
+
+        button.reset:hover {
+            background: #c0392b;
+        }
+
+        .logs-panel {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .logs-panel h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+
+        .logs {
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .log-entry {
+            padding: 5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9em;
+            color: #ddd;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-running { background: #4CAF50; }
+        .status-paused { background: #ff9800; }
+        .status-stopped { background: #f44336; }
+
+        .counter {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 10px 0;
+        }
+
+        .density-bar {
+            height: 5px;
+            background: #555;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .density-fill {
+            height: 100%;
+            transition: width 0.5s;
+        }
+
+        .density-none { width: 5%; background: #777; }
+        .density-low { width: 25%; background: #4CAF50; }
+        .density-medium { width: 50%; background: #ff9800; }
+        .density-high { width: 100%; background: #f44336; }
+
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .road-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .road-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .intersection {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .signal {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚦 Traffic Management System</h1>
+            <p class="subtitle">Real-time Traffic Control with Queue & Priority Queue Data Structures</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="main-panel">
+                <h2>Traffic Intersection</h2>
+                <div class="intersection">
+                    <!-- Roads -->
+                    <div class="road horizontal"></div>
+                    <div class="road vertical"></div>
+                    
+                    <!-- Traffic Signals -->
+                    <div class="signal north red" id="signal-north">N</div>
+                    <div class="signal east red" id="signal-east">E</div>
+                    <div class="signal south red" id="signal-south">S</div>
+                    <div class="signal west red" id="signal-west">W</div>
+                </div>
+
+                <h2>Road Status</h2>
+                <div class="road-section">
+                    <div class="road-card" id="road-north" onclick="selectRoad(0)">
+                        <h3>North Road</h3>
+                        <div class="road-stats">
+                            <span>Vehicles: <span id="vehicles-north">0</span></span>
+                            <span>Density: <span id="density-north">None</span></span>
+                            <span>In Queue: <span id="queue-north">0</span></span>
+                            <div class="density-bar">
+                                <div class="density-fill density-none" id="density-bar-north"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="road-card" id="road-east" onclick="selectRoad(1)">
+                        <h3>East Road</h3>
+                        <div class="road-stats">
+                            <span>Vehicles: <span id="vehicles-east">0</span></span>
+                            <span>Density: <span id="density-east">None</span></span>
+                            <span>In Queue: <span id="queue-east">0</span></span>
+                            <div class="density-bar">
+                                <div class="density-fill density-none" id="density-bar-east"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="road-card" id="road-south" onclick="selectRoad(2)">
+                        <h3>South Road</h3>
+                        <div class="road-stats">
+                            <span>Vehicles: <span id="vehicles-south">0</span></span>
+                            <span>Density: <span id="density-south">None</span></span>
+                            <span>In Queue: <span id="queue-south">0</span></span>
+                            <div class="density-bar">
+                                <div class="density-fill density-none" id="density-bar-south"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="road-card" id="road-west" onclick="selectRoad(3)">
+                        <h3>West Road</h3>
+                        <div class="road-stats">
+                            <span>Vehicles: <span id="vehicles-west">0</span></span>
+                            <span>Density: <span id="density-west">None</span></span>
+                            <span>In Queue: <span id="queue-west">0</span></span>
+                            <div class="density-bar">
+                                <div class="density-fill density-none" id="density-bar-west"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="counter">
+                    <div>Green Signal Timer: <span id="timer">0</span>s</div>
+                    <div>Active Road: <span id="active-road">None</span></div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <h2>Control Panel</h2>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Select Input Mode:</label>
+                        <div class="buttons">
+                            <button onclick="manualInput()">Manual Input</button>
+                            <button onclick="randomInput()" class="secondary">Random Input</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group" id="manual-inputs" style="display: none;">
+                        <label>Enter Vehicle Counts (0-50):</label>
+                        <input type="number" id="input-north" placeholder="North Road" min="0" max="50">
+                        <input type="number" id="input-east" placeholder="East Road" min="0" max="50">
+                        <input type="number" id="input-south" placeholder="South Road" min="0" max="50">
+                        <input type="number" id="input-west" placeholder="West Road" min="0" max="50">
+                        <button onclick="submitManualInput()" style="margin-top: 10px;">Submit</button>
+                    </div>
+
+                    <div class="buttons">
+                        <button onclick="startSimulation()">Start Simulation</button>
+                        <button onclick="makeDecision()" class="secondary">Make Decision</button>
+                        <button onclick="resetSystem()" class="reset">Reset System</button>
+                    </div>
+
+                    <div class="control-group">
+                        <label>System Status:</label>
+                        <div>
+                            <span class="status-indicator status-stopped"></span>
+                            <span id="system-status">Stopped</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-structures">
+                    <h3>Data Structures Status</h3>
+                    <div class="road-stats">
+                        <span>Priority Queue Size: <span id="priority-queue-size">0</span></span>
+                        <span>Total Vehicles in Queues: <span id="total-vehicles">0</span></span>
+                        <span>Log Entries: <span id="log-count">0</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="logs-panel">
+            <h3>Simulation Logs</h3>
+            <div class="logs" id="logs-container">
+                <!-- Logs will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================== DATA STRUCTURES =====================
+        class Queue {
+            constructor() {
+                this.items = [];
+            }
+
+            enqueue(element) {
+                this.items.push(element);
+            }
+
+            dequeue() {
+                if (this.isEmpty()) return -1;
+                return this.items.shift();
+            }
+
+            peek() {
+                if (this.isEmpty()) return -1;
+                return this.items[0];
+            }
+
+            isEmpty() {
+                return this.items.length === 0;
+            }
+
+            size() {
+                return this.items.length;
+            }
+
+            getItems() {
+                return [...this.items];
+            }
+        }
+
+        class PriorityQueue {
+            constructor() {
+                this.heap = [];
+            }
+
+            push(road, density) {
+                this.heap.push({ road, density });
+                this.heap.sort((a, b) => b.density - a.density);
+            }
+
+            pop() {
+                if (this.heap.length === 0) return -1;
+                return this.heap.shift().road;
+            }
+
+            isEmpty() {
+                return this.heap.length === 0;
+            }
+
+            size() {
+                return this.heap.length;
+            }
+        }
+
+        // ===================== TRAFFIC SYSTEM =====================
+        class TrafficSystem {
+            constructor() {
+                this.roads = 4;
+                this.vehicleQueues = [
+                    new Queue(), // North
+                    new Queue(), // East
+                    new Queue(), // South
+                    new Queue()  // West
+                ];
+                this.priorityQueue = new PriorityQueue();
+                this.logs = [];
+                this.vehicleCounts = [0, 0, 0, 0];
+                this.densityLevels = ["None", "None", "None", "None"];
+                this.activeRoad = -1;
+                this.timer = 0;
+                this.timerInterval = null;
+                this.isRunning = false;
+            }
+
+            setVehicleCounts(counts) {
+                this.vehicleCounts = [...counts];
+                this.updateQueues();
+                this.calculateDensity();
+                this.updatePriorityQueue();
+                this.addLog("Vehicle counts updated: " + counts.join(", "));
+            }
+
+            updateQueues() {
+                for (let i = 0; i < this.roads; i++) {
+                    // Clear and refill queue
+                    this.vehicleQueues[i] = new Queue();
+                    for (let j = 0; j < this.vehicleCounts[i]; j++) {
+                        this.vehicleQueues[i].enqueue(`V${j+1}`);
+                    }
+                }
+            }
+
+            calculateDensity() {
+                for (let i = 0; i < this.roads; i++) {
+                    if (this.vehicleCounts[i] === 0) {
+                        this.densityLevels[i] = "None";
+                    } else if (this.vehicleCounts[i] <= 10) {
+                        this.densityLevels[i] = "Low";
+                    } else if (this.vehicleCounts[i] <= 25) {
+                        this.densityLevels[i] = "Medium";
+                    } else {
+                        this.densityLevels[i] = "High";
+                    }
+                }
+            }
+
+            updatePriorityQueue() {
+                this.priorityQueue = new PriorityQueue();
+                for (let i = 0; i < this.roads; i++) {
+                    this.priorityQueue.push(i, this.vehicleCounts[i]);
+                }
+            }
+
+            getGreenTime(density) {
+                switch(density) {
+                    case "High": return 40;
+                    case "Medium": return 25;
+                    case "Low": return 15;
+                    default: return 5;
+                }
+            }
+
+            selectRoadForGreen() {
+                return this.priorityQueue.pop();
+            }
+
+            runGreenSignal(road) {
+                if (road === -1) return false;
+                
+                this.activeRoad = road;
+                const greenTime = this.getGreenTime(this.densityLevels[road]);
+                
+                // Let some vehicles pass
+                const queue = this.vehicleQueues[road];
+                const vehiclesToPass = Math.min(queue.size(), 5);
+                const passedVehicles = [];
+                
+                for (let i = 0; i < vehiclesToPass; i++) {
+                    passedVehicles.push(queue.dequeue());
+                }
+                
+                this.vehicleCounts[road] = queue.size();
+                
+                this.addLog(`Road ${this.getRoadName(road)}: Green signal, ${vehiclesToPass} vehicles passed`);
+                this.addLog(`Vehicles passed: ${passedVehicles.join(", ")}`);
+                
+                return greenTime;
+            }
+
+            getRoadName(index) {
+                const names = ["North", "East", "South", "West"];
+                return names[index];
+            }
+
+            addLog(message) {
+                const timestamp = new Date().toLocaleTimeString();
+                this.logs.unshift(`${timestamp}: ${message}`);
+                if (this.logs.length > 50) this.logs.pop();
+                updateLogsUI();
+            }
+
+            reset() {
+                this.vehicleCounts = [0, 0, 0, 0];
+                this.densityLevels = ["None", "None", "None", "None"];
+                this.updateQueues();
+                this.updatePriorityQueue();
+                this.activeRoad = -1;
+                this.timer = 0;
+                this.logs = [];
+                this.isRunning = false;
+                
+                if (this.timerInterval) {
+                    clearInterval(this.timerInterval);
+                    this.timerInterval = null;
+                }
+                
+                this.addLog("System reset");
+            }
+
+            getTotalVehicles() {
+                return this.vehicleCounts.reduce((sum, count) => sum + count, 0);
+            }
+        }
+
+        // ===================== GLOBAL INSTANCE =====================
+        const trafficSystem = new TrafficSystem();
+
+        // ===================== UI FUNCTIONS =====================
+        function updateUI() {
+            // Update road cards
+            const roadNames = ["north", "east", "south", "west"];
+            roadNames.forEach((road, index) => {
+                document.getElementById(`vehicles-${road}`).textContent = trafficSystem.vehicleCounts[index];
+                document.getElementById(`density-${road}`).textContent = trafficSystem.densityLevels[index];
+                document.getElementById(`queue-${road}`).textContent = trafficSystem.vehicleQueues[index].size();
+                
+                // Update density bar
+                const densityBar = document.getElementById(`density-bar-${road}`);
+                const densityClass = `density-${trafficSystem.densityLevels[index].toLowerCase().replace(" ", "-")}`;
+                densityBar.className = `density-fill ${densityClass}`;
+                
+                // Update active road highlighting
+                const roadCard = document.getElementById(`road-${road}`);
+                if (index === trafficSystem.activeRoad) {
+                    roadCard.classList.add('active');
+                } else {
+                    roadCard.classList.remove('active');
+                }
+            });
+
+            // Update traffic signals
+            updateSignals();
+
+            // Update data structures info
+            document.getElementById('priority-queue-size').textContent = trafficSystem.priorityQueue.size();
+            document.getElementById('total-vehicles').textContent = trafficSystem.getTotalVehicles();
+            document.getElementById('log-count').textContent = trafficSystem.logs.length;
+            document.getElementById('active-road').textContent = 
+                trafficSystem.activeRoad === -1 ? "None" : trafficSystem.getRoadName(trafficSystem.activeRoad);
+        }
+
+        function updateSignals() {
+            const signalElements = [
+                document.getElementById('signal-north'),
+                document.getElementById('signal-east'),
+                document.getElementById('signal-south'),
+                document.getElementById('signal-west')
+            ];
+
+            signalElements.forEach((signal, index) => {
+                signal.className = signal.className.split(' ')[0] + ' ' + 
+                                  signal.className.split(' ')[1] + ' ' +
+                                  (index === trafficSystem.activeRoad ? 'green' : 'red');
+            });
+        }
+
+        function updateLogsUI() {
+            const logsContainer = document.getElementById('logs-container');
+            logsContainer.innerHTML = '';
+            trafficSystem.logs.forEach(log => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = log;
+                logsContainer.appendChild(logEntry);
+            });
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').textContent = trafficSystem.timer;
+            if (trafficSystem.timer > 0) {
+                trafficSystem.timer--;
+            } else if (trafficSystem.isRunning && trafficSystem.timer === 0) {
+                trafficSystem.activeRoad = -1;
+                updateUI();
+                makeDecision();
+            }
+        }
+
+        // ===================== CONTROL FUNCTIONS =====================
+        function manualInput() {
+            document.getElementById('manual-inputs').style.display = 'block';
+            trafficSystem.addLog("Manual input mode selected");
+        }
+
+        function randomInput() {
+            const counts = Array(4).fill(0).map(() => Math.floor(Math.random() * 40));
+            trafficSystem.setVehicleCounts(counts);
+            updateUI();
+            trafficSystem.addLog("Random traffic data generated");
+        }
+
+        function submitManualInput() {
+            const counts = [
+                parseInt(document.getElementById('input-north').value) || 0,
+                parseInt(document.getElementById('input-east').value) || 0,
+                parseInt(document.getElementById('input-south').value) || 0,
+                parseInt(document.getElementById('input-west').value) || 0
+            ];
+            
+            trafficSystem.setVehicleCounts(counts);
+            updateUI();
+            document.getElementById('manual-inputs').style.display = 'none';
+            
+            // Clear input fields
+            ['input-north', 'input-east', 'input-south', 'input-west'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        function startSimulation() {
+            if (!trafficSystem.isRunning) {
+                trafficSystem.isRunning = true;
+                document.getElementById('system-status').textContent = 'Running';
+                document.querySelector('.status-indicator').className = 'status-indicator status-running';
+                trafficSystem.addLog("Simulation started");
+                
+                // Start timer update
+                trafficSystem.timerInterval = setInterval(updateTimer, 1000);
+                makeDecision();
+            }
+        }
+
+        function makeDecision() {
+            if (!trafficSystem.isRunning) {
+                trafficSystem.addLog("Cannot make decision - simulation not running");
+                return;
+            }
+
+            const selectedRoad = trafficSystem.selectRoadForGreen();
+            
+            if (selectedRoad === -1) {
+                trafficSystem.addLog("No traffic detected");
+                return;
+            }
+
+            const greenTime = trafficSystem.runGreenSignal(selectedRoad);
+            trafficSystem.timer = greenTime;
+            
+            trafficSystem.addLog(`Selected Road ${trafficSystem.getRoadName(selectedRoad)} for green signal`);
+            trafficSystem.addLog(`Green time: ${greenTime} seconds`);
+            
+            updateUI();
+        }
+
+        function selectRoad(roadIndex) {
+            if (trafficSystem.isRunning) {
+                trafficSystem.addLog(`Cannot manually select road while simulation is running`);
+                return;
+            }
+            
+            // For manual selection (when simulation is stopped)
+            trafficSystem.activeRoad = roadIndex;
+            trafficSystem.addLog(`Manually selected Road ${trafficSystem.getRoadName(roadIndex)}`);
+            updateUI();
+        }
+
+        function resetSystem() {
+            trafficSystem.reset();
+            updateUI();
+            updateLogsUI();
+            document.getElementById('system-status').textContent = 'Stopped';
+            document.querySelector('.status-indicator').className = 'status-indicator status-stopped';
+            
+            if (trafficSystem.timerInterval) {
+                clearInterval(trafficSystem.timerInterval);
+            }
+        }
+
+        // ===================== INITIALIZATION =====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add initial log
+            trafficSystem.addLog("Traffic Management System initialized");
+            updateUI();
+            updateLogsUI();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'r': case 'R':
+                    if (e.ctrlKey) resetSystem();
+                    break;
+                case ' ': // Spacebar
+                    if (!trafficSystem.isRunning) {
+                        startSimulation();
+                    }
+                    break;
+                case 'd': case 'D':
+                    makeDecision();
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
+242217_242213_242267_DS_Project-UI.html
+Displaying 242217_242213_242267_DS_Project-UI.html.
+project 
+Aisha Sattar Choudhry
+•
+Dec 19, 2025
+Due Dec 21, 2025, 11:59 PM
+project report+code
+Class comments
+Your work
+Turned in
+242217_242267_242213_DS_PROJECT.cpp
+Binary
+
+242217_242213_242267_DS_Project-UI.html
+HTML
+
+242217_242267_242213_BSSE-3-A_DS_REPORT.docx
+Microsoft Word
+
+Private comments
